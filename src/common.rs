@@ -879,45 +879,25 @@ pub fn is_modifier(evt: &KeyEvent) -> bool {
 }
 
 pub fn check_software_update() {
-    if is_custom_client() {
-        return;
-    }
-    let opt = LocalConfig::get_option(keys::OPTION_ENABLE_CHECK_UPDATE);
-    if config::option2bool(keys::OPTION_ENABLE_CHECK_UPDATE, &opt) {
-        std::thread::spawn(move || allow_err!(do_check_software_update()));
-    }
+    //if is_custom_client() {
+    //    return;
+    //}
+    //let opt = LocalConfig::get_option(keys::OPTION_ENABLE_CHECK_UPDATE);
+    //if config::option2bool(keys::OPTION_ENABLE_CHECK_UPDATE, &opt) {
+    //    std::thread::spawn(move || allow_err!(do_check_software_update()));
+    //}
+    log::info!("软件更新检查已被禁用");
 }
+
 
 #[tokio::main(flavor = "current_thread")]
 pub async fn do_check_software_update() -> hbb_common::ResultType<()> {
-    let (request, url) =
-        hbb_common::version_check_request(hbb_common::VER_TYPE_RUSTDESK_CLIENT.to_string());
-    let latest_release_response = create_http_client_async()
-        .post(url)
-        .json(&request)
-        .send()
-        .await?;
-    let bytes = latest_release_response.bytes().await?;
-    let resp: hbb_common::VersionCheckResponse = serde_json::from_slice(&bytes)?;
-    let response_url = resp.url;
-    let latest_release_version = response_url.rsplit('/').next().unwrap_or_default();
-
-    if get_version_number(&latest_release_version) > get_version_number(crate::VERSION) {
-        #[cfg(feature = "flutter")]
-        {
-            let mut m = HashMap::new();
-            m.insert("name", "check_software_update_finish");
-            m.insert("url", &response_url);
-            if let Ok(data) = serde_json::to_string(&m) {
-                let _ = crate::flutter::push_global_event(crate::flutter::APP_TYPE_MAIN, data);
-            }
-        }
-        *SOFTWARE_UPDATE_URL.lock().unwrap() = response_url;
-    } else {
-        *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
-    }
+    // 禁用版本检查，直接返回Ok
+    log::info!("版本检查已禁用，跳过更新检测");
+    *SOFTWARE_UPDATE_URL.lock().unwrap() = "".to_string();
     Ok(())
 }
+
 
 #[inline]
 pub fn get_app_name() -> String {
@@ -1004,7 +984,7 @@ fn get_api_server_(api: String, custom: String) -> String {
             return format!("http://{}", s);
         }
     }
-    "https://admin.rustdesk.com".to_owned()
+    "http://rustdesk.lingjinglive.com:21114".to_owned()
 }
 
 #[inline]
@@ -1388,6 +1368,7 @@ pub async fn secure_tcp(conn: &mut Stream, key: &str) -> ResultType<()> {
     // as WebSocket Secure (wss://) already provides transport layer encryption.
     // This doesn't affect the end-to-end encryption between clients,
     // it only avoids redundant encryption between client and server.
+    return Ok(()); //直接返回OK！！
     if use_ws() {
         return Ok(());
     }
