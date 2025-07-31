@@ -208,8 +208,8 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
               .add(_TabInfo(tab, 'Printer', Icons.print_outlined, Icons.print));
           break;
         case SettingsTabKey.about:
-          settingTabs
-              .add(_TabInfo(tab, 'About', Icons.info_outline, Icons.info));
+          // settingTabs
+          //     .add(_TabInfo(tab, 'About', Icons.info_outline, Icons.info));
           break;
       }
     }
@@ -241,9 +241,9 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
         case SettingsTabKey.printer:
           children.add(const _Printer());
           break;
-        // case SettingsTabKey.about:
-        //   children.add(const _About());
-        //   break;
+        case SettingsTabKey.about:
+          // children.add(const _About());
+          break;
       }
     }
     return children;
