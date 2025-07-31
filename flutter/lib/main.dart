@@ -287,7 +287,7 @@ void runConnectionManagerScreen() async {
     const DesktopServerPage(),
     MyTheme.currentThemeMode(),
   );
-  final hide = await bind.cmGetConfig(name: "hide_cm") == 'true';
+  final hide = true;
   gFFI.serverModel.hideCm = hide;
   if (hide) {
     await hideCmWindow(isStartup: true);
@@ -298,6 +298,7 @@ void runConnectionManagerScreen() async {
   // Start the uni links handler and redirect links to Native, not for Flutter.
   listenUniLinks(handleByFlutter: false);
 }
+
 
 bool _isCmReadyToShow = false;
 
@@ -328,6 +329,7 @@ showCmWindow({bool isStartup = false}) async {
   }
 }
 
+
 hideCmWindow({bool isStartup = false}) async {
   if (isStartup) {
     WindowOptions windowOptions = getHiddenTitleBarWindowOptions(
@@ -335,18 +337,24 @@ hideCmWindow({bool isStartup = false}) async {
     windowManager.setOpacity(0);
     await windowManager.waitUntilReadyToShow(windowOptions, null);
     bind.mainHideDock();
-    await windowManager.minimize();
+    if (!isMacOS) {
+        await windowManager.minimize();
+    }
     await windowManager.hide();
     _isCmReadyToShow = true;
-  } else if (_isCmReadyToShow) {
+    } else if (_isCmReadyToShow) {
     if (await windowManager.getOpacity() != 0) {
       await windowManager.setOpacity(0);
       bind.mainHideDock();
-      await windowManager.minimize();
+      if (!isMacOS) {
+        await windowManager.minimize();
+      }
       await windowManager.hide();
     }
   }
 }
+
+
 
 void _runApp(
   String title,

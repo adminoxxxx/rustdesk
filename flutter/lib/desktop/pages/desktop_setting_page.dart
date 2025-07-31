@@ -241,9 +241,9 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
         case SettingsTabKey.printer:
           children.add(const _Printer());
           break;
-        case SettingsTabKey.about:
-          children.add(const _About());
-          break;
+        // case SettingsTabKey.about:
+        //   children.add(const _About());
+        //   break;
       }
     }
     return children;
@@ -520,20 +520,20 @@ class _GeneralState extends State<_General> {
               isServer: false,
             ),
           ),
-        if (!isWeb && !bind.isCustomClient())
-          _OptionCheckBox(
-            context,
-            'Check for software update on startup',
-            kOptionEnableCheckUpdate,
-            isServer: false,
-          ),
-        if (showAutoUpdate)
-          _OptionCheckBox(
-            context,
-            'Auto update',
-            kOptionAllowAutoUpdate,
-            isServer: true,
-          ),
+        // if (!isWeb && !bind.isCustomClient())
+        //   _OptionCheckBox(
+        //     context,
+        //     'Check for software update on startup',
+        //     kOptionEnableCheckUpdate,
+        //     isServer: false,
+        //   ),
+        // if (showAutoUpdate)
+        //   _OptionCheckBox(
+        //     context,
+        //     'Auto update',
+        //     kOptionAllowAutoUpdate,
+        //     isServer: true,
+        //   ),
         if (isWindows && !bind.isOutgoingOnly())
           _OptionCheckBox(
             context,
@@ -806,11 +806,11 @@ class _SafetyState extends State<_Safety> with AutomaticKeepAliveClientMixin {
             preventMouseKeyBuilder(
               block: locked,
               child: Column(children: [
-                permissions(context),
-                password(context),
-                _Card(title: '2FA', children: [tfa()]),
-                _Card(title: 'ID', children: [changeId()]),
-                more(context),
+                // permissions(context),
+                password(context)
+                // _Card(title: '2FA', children: [tfa()]),
+                // _Card(title: 'ID', children: [changeId()]),
+                // more(context),
               ]),
             ),
           ],
@@ -1198,11 +1198,11 @@ class _SafetyState extends State<_Safety> with AutomaticKeepAliveClientMixin {
       ...directIp(context),
       whitelist(),
       ...autoDisconnect(context),
-      if (bind.mainIsInstalled())
-        _OptionCheckBox(context, 'allow-only-conn-window-open-tip',
-            'allow-only-conn-window-open',
-            reverse: false, enabled: enabled),
-      if (bind.mainIsInstalled()) unlockPin()
+      // if (bind.mainIsInstalled())
+      //   _OptionCheckBox(context, 'allow-only-conn-window-open-tip',
+      //       'allow-only-conn-window-open',
+      //       reverse: false, enabled: enabled),
+      // if (bind.mainIsInstalled()) unlockPin()
     ]);
   }
 

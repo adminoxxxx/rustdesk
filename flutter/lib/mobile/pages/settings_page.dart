@@ -130,6 +130,7 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
     _enableTrustedDevices = mainGetBoolOptionSync(kOptionEnableTrustedDevices);
     _enableUdpPunch = mainGetLocalBoolOptionSync(kOptionEnableUdpPunch);
     _enableIpv6Punch = mainGetLocalBoolOptionSync(kOptionEnableIpv6Punch);
+    _checkUpdateOnStartup = false;
   }
 
   @override
