@@ -183,13 +183,68 @@ class OnlineStatusWidget extends StatefulWidget {
 // }
 
 /// State for the connection page.
+class VersionInfo {
+  final String version;
+  final String? updateUrl;
+
+  VersionInfo({required this.version, this.updateUrl});
+}
+
+class VersionUtils {
+  // 从服务器获取最新版本信息（包含更新链接）
+  static Future<VersionInfo?> getLatestVersionInfo() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://rustdesk.lingjinglive.com/latest-version'), // 替换为实际接口
+        headers: {'Content-Type': 'application/json'},
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return VersionInfo(
+          version: data['version'] as String,
+          updateUrl: data['update_url'] as String?, // 解析更新链接
+        );
+      }
+    } catch (e) {
+      print('获取版本信息失败: $e');
+    }
+    return null;
+  }
+
+  // 版本号比较
+  static bool needUpdate(String currentVersion, String latestVersion) {
+    try {
+      final currentParts = currentVersion.split('.').map(int.parse).toList();
+      final latestParts = latestVersion.split('.').map(int.parse).toList();
+      
+      final maxLength = currentParts.length > latestParts.length 
+          ? currentParts.length 
+          : latestParts.length;
+      
+      for (int i = 0; i < maxLength; i++) {
+        final current = i < currentParts.length ? currentParts[i] : 0;
+        final latest = i < latestParts.length ? latestParts[i] : 0;
+        
+        if (latest > current) return true;
+        if (latest < current) return false;
+      }
+      return false;
+    } catch (e) {
+      print('版本比较失败: $e');
+      return false;
+    }
+  }
+}
+
+/// State for the connection page.
 class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
   final _svcStopped = Get.find<RxBool>(tag: 'stop-service');
   final _svcIsUsingPublicServer = true.obs;
   Timer? _updateTimer;
   VersionInfo? _latestVersionInfo;
   bool _needUpdate = false;
-  String? _currentVersion; // 改为可空变量，因为需要异步获取
+  String? _currentVersion;
 
   double get em => 14.0;
   double? get height => bind.isIncomingOnly() ? null : em * 3;
@@ -203,7 +258,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
     });
   }
 
-  // 改进：先获取当前版本，再检查更新
+  // 检查版本更新
   void checkForUpdates() async {
     try {
       // 获取当前版本
@@ -382,6 +437,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
     } catch (_) {}
   }
 }
+
 
 /// Connection page for connecting to a remote peer.
 class ConnectionPage extends StatefulWidget {
