@@ -181,14 +181,14 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
             Text(', ', style: TextStyle(fontSize: em)),
             // 显示当前版本号
             if (_currentVersion != null) ...[
-              Text('Version:$_currentVersion', style: TextStyle(fontSize: em)),
+              Text('Version: $_currentVersion', style: TextStyle(fontSize: em)),
               Text(', ', style: TextStyle(fontSize: em)),
             ],
             Flexible(
               child: InkWell(
                 onTap: onUsePublicServerGuide,
                 child: Text(
-                  '进入账号管理后台',
+                  '账号管理后台',
                   style: TextStyle(
                     decoration: TextDecoration.underline,
                     fontSize: em
@@ -203,7 +203,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
                 child: InkWell(
                   onTap: handleUpdateClick,
                   child: Text(
-                    '点击更新最新版本',
+                    '发现新版本,点击下载更新最新版本！',
                     style: TextStyle(
                       decoration: TextDecoration.underline,
                       fontSize: em,
