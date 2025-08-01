@@ -46,7 +46,7 @@ class VersionUtils {
   static Future<VersionInfo?> getLatestVersionInfo() async {
     try {
       final response = await http.get(
-        Uri.parse('https://rustdesk.lingjinglive.com/latest-version'), // 替换为实际接口
+        Uri.parse('https://rustdesk.lingjinglive.com/version'), // 替换为实际接口
         headers: {'Content-Type': 'application/json'},
       );
       
