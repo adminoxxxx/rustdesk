@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_hbb/common/widgets/connection_page_title.dart';
 import 'package:flutter_hbb/consts.dart';
@@ -32,21 +33,206 @@ class OnlineStatusWidget extends StatefulWidget {
 }
 
 /// State for the connection page.
+// class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
+//   final _svcStopped = Get.find<RxBool>(tag: 'stop-service');
+//   final _svcIsUsingPublicServer = true.obs;
+//   Timer? _updateTimer;
+
+//   double get em => 14.0;
+//   double? get height => bind.isIncomingOnly() ? null : em * 3;
+
+//   void onUsePublicServerGuide() {
+//     const url = "https://rustdesk.lingjinglive.com/";
+//     canLaunchUrlString(url).then((can) {
+//       if (can) {
+//         launchUrlString(url);
+//       }
+//     });
+//   }
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _updateTimer = periodic_immediate(Duration(seconds: 1), () async {
+//       updateStatus();
+//     });
+//   }
+
+//   @override
+//   void dispose() {
+//     _updateTimer?.cancel();
+//     super.dispose();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final isIncomingOnly = bind.isIncomingOnly();
+//     startServiceWidget() => Offstage(
+//           offstage: !_svcStopped.value,
+//           child: InkWell(
+//                   onTap: () async {
+//                     await start_service(true);
+//                   },
+//                   child: Text(translate("Start service"),
+//                       style: TextStyle(
+//                           decoration: TextDecoration.underline, fontSize: em)))
+//               .marginOnly(left: em),
+//         );
+
+//     setupServerWidget() => Flexible(
+//       child: Offstage(
+//         offstage: false, // 始终显示
+//         child: Row(
+//           crossAxisAlignment: CrossAxisAlignment.center,
+//           children: [
+//             Text(', ', style: TextStyle(fontSize: em)),
+//             Flexible(
+//               child: InkWell(
+//                 onTap: onUsePublicServerGuide,
+//                 child: Text(
+//                   '单击进入管理后台', // 改为指定文本
+//                   style: TextStyle(
+//                     decoration: TextDecoration.underline,
+//                     fontSize: em
+//                   ),
+//                 ),
+//               ),
+//             )
+//           ],
+//         ),
+//       ),
+//     );
+
+
+//     basicWidget() => Row(
+//           crossAxisAlignment: CrossAxisAlignment.center,
+//           children: [
+//             Container(
+//               height: 8,
+//               width: 8,
+//               decoration: BoxDecoration(
+//                 borderRadius: BorderRadius.circular(4),
+//                 color: _svcStopped.value ||
+//                         stateGlobal.svcStatus.value == SvcStatus.connecting
+//                     ? kColorWarn
+//                     : (stateGlobal.svcStatus.value == SvcStatus.ready
+//                         ? Color.fromARGB(255, 50, 190, 166)
+//                         : Color.fromARGB(255, 224, 79, 95)),
+//               ),
+//             ).marginSymmetric(horizontal: em),
+//             Container(
+//               width: isIncomingOnly ? 226 : null,
+//               child: _buildConnStatusMsg(),
+//             ),
+//             // stop
+//             if (!isIncomingOnly) startServiceWidget(),
+//             // ready && public
+//             // No need to show the guide if is custom client.
+//             if (!isIncomingOnly) setupServerWidget(),
+//           ],
+//         );
+
+//     return Container(
+//       height: height,
+//       child: Obx(() => isIncomingOnly
+//           ? Column(
+//               children: [
+//                 basicWidget(),
+//                 Align(
+//                         child: startServiceWidget(),
+//                         alignment: Alignment.centerLeft)
+//                     .marginOnly(top: 2.0, left: 22.0),
+//               ],
+//             )
+//           : basicWidget()),
+//     ).paddingOnly(right: isIncomingOnly ? 8 : 0);
+//   }
+
+//   _buildConnStatusMsg() {
+//     widget.onSvcStatusChanged?.call();
+//     return Text(
+//       _svcStopped.value
+//           ? translate("Service is not running")
+//           : stateGlobal.svcStatus.value == SvcStatus.connecting
+//               ? translate("connecting_status")
+//               : stateGlobal.svcStatus.value == SvcStatus.notReady
+//                   ? translate("not_ready_status")
+//                   : translate('Ready'),
+//       style: TextStyle(fontSize: em),
+//     );
+//   }
+
+//   updateStatus() async {
+//     final status =
+//         jsonDecode(await bind.mainGetConnectStatus()) as Map<String, dynamic>;
+//     final statusNum = status['status_num'] as int;
+//     if (statusNum == 0) {
+//       stateGlobal.svcStatus.value = SvcStatus.connecting;
+//     } else if (statusNum == -1) {
+//       stateGlobal.svcStatus.value = SvcStatus.notReady;
+//     } else if (statusNum == 1) {
+//       stateGlobal.svcStatus.value = SvcStatus.ready;
+//     } else {
+//       stateGlobal.svcStatus.value = SvcStatus.notReady;
+//     }
+//     _svcIsUsingPublicServer.value = await bind.mainIsUsingPublicServer();
+//     try {
+//       stateGlobal.videoConnCount.value = status['video_conn_count'] as int;
+//     } catch (_) {}
+//   }
+// }
+
+/// State for the connection page.
 class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
   final _svcStopped = Get.find<RxBool>(tag: 'stop-service');
   final _svcIsUsingPublicServer = true.obs;
   Timer? _updateTimer;
+  VersionInfo? _latestVersionInfo;
+  bool _needUpdate = false;
+  String? _currentVersion; // 改为可空变量，因为需要异步获取
 
   double get em => 14.0;
   double? get height => bind.isIncomingOnly() ? null : em * 3;
 
   void onUsePublicServerGuide() {
-    const url = "https://rustdesk.com/pricing";
+    const url = "https://rustdesk.lingjinglive.com/";
     canLaunchUrlString(url).then((can) {
       if (can) {
         launchUrlString(url);
       }
     });
+  }
+
+  // 改进：先获取当前版本，再检查更新
+  void checkForUpdates() async {
+    try {
+      // 获取当前版本
+      _currentVersion = await bind.mainGetVersion();
+      if (_currentVersion != null) {
+        // 获取最新版本信息
+        final latestVersionInfo = await VersionUtils.getLatestVersionInfo();
+        if (latestVersionInfo != null) {
+          setState(() {
+            _latestVersionInfo = latestVersionInfo;
+            _needUpdate = VersionUtils.needUpdate(
+                _currentVersion!, latestVersionInfo.version);
+          });
+        }
+      }
+    } catch (e) {
+      print('版本检查失败: $e');
+    }
+  }
+
+  void handleUpdateClick() {
+    final url = _latestVersionInfo?.updateUrl;
+    if (url != null) {
+      canLaunchUrlString(url).then((can) {
+        if (can) {
+          launchUrlString(url);
+        }
+      });
+    }
   }
 
   @override
@@ -55,6 +241,8 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
     _updateTimer = periodic_immediate(Duration(seconds: 1), () async {
       updateStatus();
     });
+    // 初始化时检查版本更新
+    checkForUpdates();
   }
 
   @override
@@ -78,17 +266,46 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
               .marginOnly(left: em),
         );
 
-    Widget setupServerWidget() => Flexible(
-       child: Offstage(
-         offstage: !(!_svcStopped.value &&
-             stateGlobal.svcStatus.value == SvcStatus.ready &&
-             _svcIsUsingPublicServer.value),
-         child: Row(
-           crossAxisAlignment: CrossAxisAlignment.center,
-           children: [], 
-         ),
-       ),
-     );
+    setupServerWidget() => Flexible(
+      child: Offstage(
+        offstage: false,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(', ', style: TextStyle(fontSize: em)),
+            Flexible(
+              child: InkWell(
+                onTap: onUsePublicServerGuide,
+                child: Text(
+                  '单击进入管理后台',
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    fontSize: em
+                  ),
+                ),
+              ),
+            ),
+            // 显示版本更新提示
+            if (_needUpdate && _latestVersionInfo?.updateUrl != null) ...[
+              Text(', ', style: TextStyle(fontSize: em)),
+              Flexible(
+                child: InkWell(
+                  onTap: handleUpdateClick,
+                  child: Text(
+                    '点击更新最新版本',
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                      fontSize: em,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ),
+            ]
+          ],
+        ),
+      ),
+    );
 
 
     basicWidget() => Row(
@@ -111,10 +328,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
               width: isIncomingOnly ? 226 : null,
               child: _buildConnStatusMsg(),
             ),
-            // stop
             if (!isIncomingOnly) startServiceWidget(),
-            // ready && public
-            // No need to show the guide if is custom client.
             if (!isIncomingOnly) setupServerWidget(),
           ],
         );
